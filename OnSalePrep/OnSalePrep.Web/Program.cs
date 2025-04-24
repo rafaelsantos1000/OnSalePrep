@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using OnSalePrep.Web.Data;
+using OnSalePrep.Web.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,6 +13,8 @@ builder.Services.AddDbContext<DataContext>(o =>
 });
 
 builder.Services.AddRazorPages().AddRazorRuntimeCompilation();
+
+builder.Services.AddScoped<IRepository, Repository>();
 
 var app = builder.Build();
 
