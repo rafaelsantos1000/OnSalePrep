@@ -1,22 +1,22 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using OnSalePrep.Web.Data;
 using OnSalePrep.Web.Data.Entities;
+using OnSalePrep.Web.Repositories;
 
 namespace OnSalePrep.Web.Controllers
 {
     public class CategoriesController : Controller
     {
-        private readonly DataContext _context;
+        private readonly ICategoryRepository _categoryRepository;
 
-        public CategoriesController(DataContext context)
+        public CategoriesController(ICategoryRepository categoryRepository)
         {
-            _context = context;
+           _categoryRepository = categoryRepository;
         }
 
-        public async Task<IActionResult> Index()
+        public IActionResult Index()
         {
-            return View(await _context.Categories.ToListAsync());
+            return View(_categoryRepository.GetAll());
         }
 
         public async Task<IActionResult> Details(int? id)
@@ -26,8 +26,7 @@ namespace OnSalePrep.Web.Controllers
                 return NotFound();
             }
 
-            var category = await _context.Categories
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var category = await _categoryRepository.GetByIdAsync(id.Value);
             if (category == null)
             {
                 return NotFound();
@@ -51,8 +50,7 @@ namespace OnSalePrep.Web.Controllers
             {
                 try
                 {
-                    _context.Add(category);
-                    await _context.SaveChangesAsync();
+                    await _categoryRepository.CreateAsync(category);
                     return RedirectToAction(nameof(Index));
                 }
                 catch (DbUpdateException dbUpdateException)
@@ -83,7 +81,7 @@ namespace OnSalePrep.Web.Controllers
                 return NotFound();
             }
 
-            var category = await _context.Categories.FindAsync(id);
+            var category = await _categoryRepository.GetByIdAsync(id.Value);
             if (category == null)
             {
                 return NotFound();
@@ -105,8 +103,7 @@ namespace OnSalePrep.Web.Controllers
             {
                 try
                 {
-                    _context.Update(category);
-                    await _context.SaveChangesAsync();
+                    await _categoryRepository.UpdateAsync(category);
                     return RedirectToAction(nameof(Index));
                 }
                 catch (DbUpdateException dbUpdateException)
@@ -137,8 +134,7 @@ namespace OnSalePrep.Web.Controllers
                 return NotFound();
             }
 
-            var category = await _context.Categories
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var category = await _categoryRepository.GetByIdAsync(id.Value);
             if (category == null)
             {
                 return NotFound();
@@ -152,13 +148,11 @@ namespace OnSalePrep.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var category = await _context.Categories.FindAsync(id);
-            if (category != null)
+            var category = await _categoryRepository.GetByIdAsync(id);
+            if(category != null)
             {
-                _context.Categories.Remove(category);
+                await _categoryRepository.DeleteAsync(category);
             }
-
-            await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
     }

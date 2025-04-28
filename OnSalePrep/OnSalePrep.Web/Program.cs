@@ -14,7 +14,8 @@ builder.Services.AddDbContext<DataContext>(o =>
 
 builder.Services.AddRazorPages().AddRazorRuntimeCompilation();
 
-builder.Services.AddScoped<IRepository, MockRepository>();
+builder.Services.AddScoped<ICountryRepository, CountryRepository>();
+builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 
 var app = builder.Build();
 

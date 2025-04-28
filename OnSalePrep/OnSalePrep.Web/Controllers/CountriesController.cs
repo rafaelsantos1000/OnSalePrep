@@ -7,28 +7,28 @@ namespace OnSalePrep.Web.Controllers
 {
     public class CountriesController : Controller
     {
-        private readonly IRepository _repository;
+        private readonly ICountryRepository _countryRepository;
 
-        public CountriesController(IRepository repository)
+        public CountriesController(ICountryRepository CountryRepository)
         {
-            _repository = repository;
+            _countryRepository = CountryRepository;
         }
 
        
         public IActionResult Index()
         {
-            return View(_repository.GetCountries());
+            return View(_countryRepository.GetAll());
         }
 
         
-        public IActionResult Details(int? id)
+        public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
             {
                 return NotFound();
             }
 
-            var country = _repository.GetCountry(id.Value);
+            var country = await _countryRepository.GetByIdAsync(id.Value);
             if (country == null)
             {
                 return NotFound();
@@ -52,8 +52,7 @@ namespace OnSalePrep.Web.Controllers
             {
                 try
                 {
-                    _repository.AddCountry(country);
-                    await _repository.SaveAllAsync();
+                    await _countryRepository.CreateAsync(country);
                     return RedirectToAction(nameof(Index));
                 }
                 catch(DbUpdateException dbUpdateException)
@@ -77,14 +76,14 @@ namespace OnSalePrep.Web.Controllers
         }
 
         
-        public IActionResult Edit(int? id)
+        public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
             {
                 return NotFound();
             }
 
-            var country = _repository.GetCountry(id.Value);
+            var country = await _countryRepository.GetByIdAsync(id.Value);
             if (country == null)
             {
                 return NotFound();
@@ -106,8 +105,7 @@ namespace OnSalePrep.Web.Controllers
             {
                 try
                 {
-                    _repository.UpdateCountry(country);
-                    await _repository.SaveAllAsync();
+                    await _countryRepository.UpdateAsync(country);
                     return RedirectToAction(nameof(Index));
                 }
                 catch (DbUpdateException dbUpdateException)
@@ -131,14 +129,14 @@ namespace OnSalePrep.Web.Controllers
         }
 
         
-        public IActionResult Delete(int? id)
+        public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
             {
                 return NotFound();
             }
 
-            var country = _repository.GetCountry(id.Value);
+            var country = await _countryRepository.GetByIdAsync(id.Value);
             if (country == null)
             {
                 return NotFound();
@@ -152,9 +150,8 @@ namespace OnSalePrep.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var country = _repository.GetCountry(id);
-            _repository.RemoveCountry(country);
-            await _repository.SaveAllAsync();
+            var country = await _countryRepository.GetByIdAsync(id);
+            await _countryRepository.DeleteAsync(country!);
             return RedirectToAction(nameof(Index));
         }
     }
